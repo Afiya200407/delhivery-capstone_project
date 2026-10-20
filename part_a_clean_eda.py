@@ -30,3 +30,43 @@ print(raw_rows, rows_after_dedup, duplicate_rows_removed)
 print(missing_distance_km_before, missing_parcel_weight_before, sentinel_weight_rows,
     missing_declared_value_before, missing_payment_mode_before, service_type_spellings_before)
 print(len(df), df["is_delayed"].sum(), df[FEATURES + ["delivery_hours", "is_delayed"]].isna().sum().sum())
+
+
+q1 = df["delivery_hours"].quantile(0.25)
+q3 = df["delivery_hours"].quantile(0.75)
+iqr = q3 - q1
+lower = q1 - 1.5 * iqr
+upper = q3 + 1.5 * iqr
+
+checks = {
+    "raw_rows": raw_rows,
+    "duplicate_rows_removed": duplicate_rows_removed,
+    "rows_after_dedup": rows_after_dedup,
+    "missing_distance_km_before": missing_distance_km_before,
+    "missing_parcel_weight_before": missing_parcel_weight_before,
+    "sentinel_weight_rows": sentinel_weight_rows,
+    "missing_declared_value_before": missing_declared_value_before,
+    "missing_payment_mode_before": missing_payment_mode_before,
+    "service_type_spellings_before": service_type_spellings_before,
+    "service_type_spellings_after": df["service_type"].nunique(),       
+    "declared_value_mean_inr": df["declared_value_inr"].mean(),            
+    "declared_value_median_inr": df["declared_value_inr"].median(),
+    "log_declared_value_mean": df["log_declared_value"].mean(),            
+    "log_declared_value_median": df["log_declared_value"].median(),
+    "median_distance_km": medians["distance_km"],
+    "median_parcel_weight_kg": medians["parcel_weight_kg"],
+    "median_declared_value_inr": medians["declared_value_inr"], 
+    "rows_after_hub_merge": len(df),               
+    "nulls_in_features_and_target": df[FEATURES + ["delivery_hours", "is_delayed"]].isna().sum().sum(),       
+    "delayed_count": df["is_delayed"].sum(),
+    "delay_rate": df["is_delayed"].mean(),
+    "hours_q1": q1,
+    "hours_q3": q3,
+    "hours_lower_bound": lower,
+    "hours_upper_bound": upper,
+    "hours_outlier_count": ((df["delivery_hours"] < lower) | (df["delivery_hours"] > upper)).sum(),                
+}
+
+checks_df = pd.DataFrame({"metric": list(checks.keys()), "value": list(checks.values())})
+checks_df["value"] = checks_df["value"].astype(float).round(4)
+checks_df.to_csv("outputs/part_a_checks.csv", index=False)
