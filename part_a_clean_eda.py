@@ -31,7 +31,7 @@ print(missing_distance_km_before, missing_parcel_weight_before, sentinel_weight_
     missing_declared_value_before, missing_payment_mode_before, service_type_spellings_before)
 print(len(df), df["is_delayed"].sum(), df[FEATURES + ["delivery_hours", "is_delayed"]].isna().sum().sum())
 
-
+#5
 q1 = df["delivery_hours"].quantile(0.25)
 q3 = df["delivery_hours"].quantile(0.75)
 iqr = q3 - q1
@@ -70,3 +70,38 @@ checks = {
 checks_df = pd.DataFrame({"metric": list(checks.keys()), "value": list(checks.values())})
 checks_df["value"] = checks_df["value"].astype(float).round(4)
 checks_df.to_csv("outputs/part_a_checks.csv", index=False)
+
+#6
+df_g = df.copy()
+df_g["distance_band"] = pd.cut(df_g["distance_km"], bins=[0, 200, 400, 600, 2000],
+                               labels=["0-200", "201-400", "401-600", "601+"])
+
+def delay_summary(data, col):
+    s = data.groupby(col, observed=True).agg(
+        shipments=("is_delayed", "size"),
+        delayed=("is_delayed", "sum"),
+        delay_rate=("is_delayed", "mean"),
+        mean_hours=("delivery_hours", "mean"),
+    ).reset_index()
+    s.insert(0, "dimension", col)
+    return s.rename(columns={col: "group"})
+
+tables = [delay_summary(df_g, c) for c in ["service_type", "hub_tier", "distance_band"]]
+result = pd.concat(tables, ignore_index=True).round(4)
+result.to_csv("outputs/part_a_delay_by_group.csv", index=False)
+
+no_cols = df.select_dtypes("number")
+correlations = no_cols.corr()
+correlations.round(4).to_csv(
+    "outputs/part_a_correlations.csv", 
+    index=True, 
+    index_label="feature"
+)
+
+#Findings 1,2,3
+print(pd.read_csv('outputs/part_a_delay_by_group.csv').to_string())
+
+#Findings 4
+corr_with_hours = correlations["delivery_hours"].drop("delivery_hours")
+top3 = corr_with_hours.abs().sort_values(ascending=False).head(3).index
+print(corr_with_hours[top3].round(4))
