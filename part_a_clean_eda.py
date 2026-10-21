@@ -15,7 +15,6 @@ rows_after_dedup = len(dedup)
 duplicate_rows_removed = len(raw) - len(dedup)
 missing_distance_km_before = dedup["distance_km"].isna().sum()
 missing_parcel_weight_before = dedup["parcel_weight_kg"].isna().sum() 
-#This is the count before the sentinel step, so the 999.0 rows aren’t missing yet and aren’t counted.
 sentinel_weight_rows = (dedup["parcel_weight_kg"] > 100).sum()
 missing_declared_value_before = dedup["declared_value"].isna().sum()
 missing_payment_mode_before = dedup["payment_mode"].isna().sum()
@@ -101,7 +100,7 @@ correlations.round(4).to_csv(
 #Findings 1,2,3
 print(pd.read_csv('outputs/part_a_delay_by_group.csv').to_string())
 
-#Findings 4
+#Finding 4
 corr_with_hours = correlations["delivery_hours"].drop("delivery_hours")
 top3 = corr_with_hours.abs().sort_values(ascending=False).head(3).index
 print(corr_with_hours[top3].round(4))
