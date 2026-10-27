@@ -43,7 +43,7 @@ segments delivery hubs, and generates operational recommendations.
   The best depth was 6, with val_rmse 6.2796. 
 
 4. **Learning rate.** 0.1 was best (R² 0.9306). 0.01 gave R² 0.7127: each tree corrects only 1% of the remaining
-  error, so 100 trees are not enough to reach a good fit and the moodel underfits (too slow). 1.0 gave R² 0.8440: each tree applies the full correction, so the model overshoots and follows noise instead of settling on the best fit.
+  error, so 100 trees are not enough to reach a good fit and the model underfits (too slow). 1.0 gave R² 0.8440: each tree applies the full correction, so the model overshoots and follows noise instead of settling on the best fit.
 
 5. **Cross-validation.** The ranking disagrees with validation: gradient boosting scored
   0.9352 (std 0.0044) against 0.9261 (std 0.0048) for linear regression. I would ship Linear Regression because of the reason that Linear Regression performs almost as well as Gradient Boosting, with a cross-validation mean R² of 0.9261 compared to 0.9352 and nearly identical validation scores (0.9313 vs. 0.9306). It is also stable across folds, with a low CV standard deviation of 0.0048, easy to explain to planners because each feature has a clear effect, and inexpensive to retrain. Additionally, it achieves a strong test R² of 0.9493, making it a reliable and practical choice. Only this model was scored on the test set (RMSE 4.5235 hours, R² 0.9493), so there is no test figure for gradient boosting.
